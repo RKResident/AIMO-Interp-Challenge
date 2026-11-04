@@ -1,0 +1,14 @@
+# Reproducing the report's Main-v2 numbers (reproduce/replay.py): CPU only
+numpy>=2.0
+pandas>=2.2
+pyarrow>=15          # or fastparquet: reads the organisers' train-main-v2 parquet
+
+# Analysis scripts in analysis/ (they also need intermediate data that is not published; see README)
+scipy>=1.13
+scikit-learn>=1.5
+matplotlib>=3.8
+
+# Running the submissions / GPU feature extraction (the challenge's evaluation environment provides these; no `accelerate`)
+# torch>=2.4
+# transformers>=4.57
+# vllm               # labelling samples only (vast_packages/)

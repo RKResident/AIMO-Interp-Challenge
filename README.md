@@ -33,7 +33,8 @@ robust-minus-non-robust direction.
 | `submission_core/` | Inference code that runs on the evaluator. The entry point is `solution.py`, which calls `predict_robustness()` in `spurious_inference.py`. `spurious_features.py` has the feature formulas; `wb2_log.py` has the hidden-state readouts (incl. the S2 direction) and logging. |
 | `submitted_solutions/` | The two nominated zips, exactly as submitted: code + `spurious_artifacts/recipe.json` (features, signs, reference values, thresholds, router/judge settings) + shipped `wb2_ship_*.npz` (PCA bases and directions). |
 | `analysis/build_submission_artifacts.py` | Builds every `recipe.json` (calibration: reference distributions, label-free median thresholds, per-model recipes, overrides). |
-| `analysis/` | Experiment scripts (`expNN_*.py`), numbered as in the report's appendix and our experiment log. They read intermediate data that is not in this repo. |
+| `reproduce/` | **Start here to check the report's numbers.** `replay.py` plus `features.csv` (our per-trace feature values) reproduce every Main column on CPU in seconds; see [Reproducing the report](#reproducing-the-report). |
+| `analysis/` | Experiment scripts (`expNN_*.py`), numbered as in the report's appendix and our experiment log. They are published for transparency, not as a runnable pipeline: they read intermediate data that is not in this repo, contain absolute paths from our machine, and some load scripts we did not publish. |
 | `datasets/` | **Our labelled robustness datasets** (5 sets: problems, five perturbations each, per-sample answers, labels under the inferred official rule), documented in [`datasets/README.md`](datasets/README.md). Built by `analysis/build_datasets.py`. |
 | `hard_pool/` | Labelling tooling for our own calibration data: perturbation spec (`PERTURB_SPEC.md`), assembly and label computation. |
 | `vast_packages/` | GPU job code: greedy generation, labelling with vLLM, feature extraction (`screen/`, `recall_src/`, …). |
@@ -53,6 +54,52 @@ calls = are_robust("Qwen/Qwen3.5-4B", "default", ["<problem text>", ...])   # li
 Requirements match the challenge's evaluation environment: one GPU, PyTorch + Hugging Face Transformers, the four models available locally,
 no `accelerate` (models are loaded and then moved with `.to("cuda")`), and one problem per call for the final evaluation.
 
+## Reproducing the report
+
+Every `train-main-v2` (Main) number in the report can be regenerated on a laptop with no GPU and no model downloads:
+
+```bash
+pip install -r requirements.txt                      # numpy, pandas, pyarrow are enough for this step
+python reproduce/replay.py --main /path/to/train-main-v2.parquet
+```
+
+`--main` is the organisers' `train-main-v2` parquet: the 2026-11-02 release on their Hugging Face page has all 43 rows for our four models
+(older copies miss some Skywork rows, and the script stops if any label is missing). The script prints each value next to the
+number in the report:
+
+| Output block | Report location |
+|---|---|
+| All robust, finished only, S1, S2, text only | Table 1, Main column |
+| v8, v8 without router/judge, S1, v8 + Olmo direction, S2 | Table 2, Main column |
+| Text only / no internals / no output features, per model | Table 3, Main columns |
+| Drop one feature from S1 | Appendix B, Main column |
+| Qwen $H_b$ by truncation, Olmo direction by position | Table 4 |
+| Per-feature AUC (our first sets / confidence-matched set / Main) | Appendix C |
+
+How it works:
+- It loads both recipes straight from `submitted_solutions/*.zip`. `v8` is S1 without Qwen's $H_{4096}$ readout; the two recipes differ only there.
+- It scores each trace with the shipped `submission_core/spurious_features.score_trace`, mirroring the submission's decision: finished → robust; otherwise the per-model rank ensemble, Olmo's Min-K% router, then the override.
+- The ablation variants are the same recipe edits described in the report.
+
+What it does not cover:
+- **Leaderboard columns.** They are the scores the leaderboard returned, and per-problem leaderboard data is not public.
+- **Olmo's Qwen judge.** It needs a Qwen trace of each Olmo problem, so Olmo's own router branch decides on Main, as in the report.
+- **Extracting the features from scratch.** That needs the models and a GPU; see `vast_packages/`.
+
+`reproduce/features.csv` contains one row per trace:
+- **Main** (`set = main`): our own 6144-token greedy traces of the 43 labelled rows. Problems are identified by `pid = "mv2_" + sha256(problem.strip())[:8]`; there is no problem text and no official label.
+- **Our labelled problems** (`set = ours_first`, `ours_matched`): unfinished traces only, with our labels (forced rule at 6144; see `datasets/`).
+
+| Columns | Meaning |
+|---|---|
+| `finished` | thinking ended within 6144 tokens |
+| `chk`, `fa`, `nrk`, `f1k`, `cfl`, `cfc`, `lble`, `pmle`, `jmp` | the rank-ensemble features (definitions in the report's Appendix A) |
+| `mink_20` | Olmo's router input (Main rows only) |
+| `force_ent__b{512…6144}` | forced-answer entropy $H_b$ after $b$ tokens of reasoning |
+| `dirproj_seg{25,50,75}__s2` | Olmo direction projection at 25/50/75% of the trace |
+
+The file was exported by `analysis/build_reproduce.py`, which needs our unpublished intermediate data and is not included.
+
 ## Rebuilding the zips
 
 `analysis/build_submission_artifacts.py` writes each solution directory into the organisers' `getting-started` repository, and
@@ -64,7 +111,8 @@ value the submissions use.
 ## Data not included
 
 Competition data (`train-main-v2`, leaderboard problems), our perturbations of the organisers' problems, raw greedy traces and generated
-text, extracted features, and the papers we read are not in this repository. Our own labelled datasets are, in `datasets/`.
+text, the full extracted feature sets, and the papers we read are not in this repository. Our own labelled datasets are, in `datasets/`;
+the feature values the report's Main tables need are in `reproduce/features.csv` (no problem text, no official labels).
 
 ## Citation
 

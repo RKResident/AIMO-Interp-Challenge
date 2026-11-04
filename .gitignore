@@ -4,6 +4,10 @@
 /*
 !/.gitignore
 !/README.md
+!/requirements.txt
+
+# ---------------------------------------------------------------- reproduction of the report's Main-v2 numbers (code + derived feature values)
+!/reproduce/
 
 # ---------------------------------------------------------------- never, anywhere
 *.pem
@@ -76,6 +80,8 @@ __pycache__/
 /analysis/report_wbonly.py
 /analysis/exp121_selection.py
 /analysis/exp121b_c3_lb.py
+/analysis/build_reproduce.py
+/analysis/report_featauc.py
 /analysis/exp48_leaderboard_signal.py
 /analysis/exp62_unfinished_sign_stability.py
 /analysis/exp65_candidate_calls.py
