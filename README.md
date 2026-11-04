@@ -34,6 +34,7 @@ robust-minus-non-robust direction.
 | `submitted_solutions/` | The two nominated zips, exactly as submitted: code + `spurious_artifacts/recipe.json` (features, signs, reference values, thresholds, router/judge settings) + shipped `wb2_ship_*.npz` (PCA bases and directions). |
 | `analysis/build_submission_artifacts.py` | Builds every `recipe.json` (calibration: reference distributions, label-free median thresholds, per-model recipes, overrides). |
 | `analysis/` | Experiment scripts (`expNN_*.py`), numbered as in the report's appendix and our experiment log. They read intermediate data that is not in this repo. |
+| `datasets/` | **Our labelled robustness datasets** (5 sets: problems, five perturbations each, per-sample answers, labels under the inferred official rule), documented in [`datasets/README.md`](datasets/README.md). Built by `analysis/build_datasets.py`. |
 | `hard_pool/` | Labelling tooling for our own calibration data: perturbation spec (`PERTURB_SPEC.md`), assembly and label computation. |
 | `vast_packages/` | GPU job code: greedy generation, labelling with vLLM, feature extraction (`screen/`, `recall_src/`, …). |
 | `extract_*.py` | Earlier feature / trajectory extraction code. |
@@ -62,8 +63,8 @@ value the submissions use.
 
 ## Data not included
 
-Competition data (`train-main-v2`, leaderboard problems), raw greedy traces and sampled generations, extracted features, our own
-labelled sets, and the papers we read are not in this repository.
+Competition data (`train-main-v2`, leaderboard problems), our perturbations of the organisers' problems, raw greedy traces and generated
+text, extracted features, and the papers we read are not in this repository. Our own labelled datasets are, in `datasets/`.
 
 ## Citation
 

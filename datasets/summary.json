@@ -1,0 +1,156 @@
+{
+ "set100_hard_32k": {
+  "Qwen/Qwen3.5-4B": {
+   "problems": 100,
+   "natural": {
+    "robust": 78,
+    "non_robust": 17,
+    "ambiguous": 5
+   },
+   "forced": {
+    "robust": 63,
+    "non_robust": 23,
+    "ambiguous": 14
+   },
+   "samples_per_version": [
+    4,
+    8
+   ]
+  },
+  "allenai/Olmo-3-7B-Think": {
+   "problems": 50,
+   "natural": {
+    "robust": 31,
+    "ambiguous": 10,
+    "non_robust": 9
+   },
+   "forced": {
+    "robust": 29,
+    "ambiguous": 12,
+    "non_robust": 9
+   },
+   "samples_per_version": [
+    4,
+    8
+   ]
+  }
+ },
+ "olympiad_32k": {
+  "Skywork/Skywork-OR1-Math-7B": {
+   "problems": 35,
+   "natural": {
+    "ambiguous": 13,
+    "robust": 12,
+    "non_robust": 10
+   },
+   "forced": {
+    "ambiguous": 13,
+    "robust": 12,
+    "non_robust": 10
+   },
+   "samples_per_version": [
+    4,
+    8
+   ]
+  },
+  "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B": {
+   "problems": 15,
+   "natural": {
+    "robust": 13,
+    "non_robust": 1,
+    "ambiguous": 1
+   },
+   "forced": {
+    "ambiguous": 8,
+    "non_robust": 4,
+    "robust": 3
+   },
+   "samples_per_version": [
+    4,
+    8
+   ]
+  }
+ },
+ "confmatched_6144": {
+  "Qwen/Qwen3.5-4B": {
+   "problems": 40,
+   "natural": {
+    "robust": 37,
+    "ambiguous": 3
+   },
+   "forced": {
+    "robust": 25,
+    "non_robust": 10,
+    "ambiguous": 5
+   },
+   "samples_per_version": [
+    8
+   ]
+  },
+  "allenai/Olmo-3-7B-Think": {
+   "problems": 39,
+   "natural": {
+    "robust": 37,
+    "non_robust": 2
+   },
+   "forced": {
+    "robust": 17,
+    "ambiguous": 12,
+    "non_robust": 10
+   },
+   "samples_per_version": [
+    8
+   ]
+  },
+  "Skywork/Skywork-OR1-Math-7B": {
+   "problems": 30,
+   "natural": {
+    "robust": 23,
+    "non_robust": 4,
+    "ambiguous": 3
+   },
+   "forced": {
+    "robust": 16,
+    "non_robust": 8,
+    "ambiguous": 6
+   },
+   "samples_per_version": [
+    8
+   ]
+  }
+ },
+ "confmatched_32k": {
+  "Qwen/Qwen3.5-4B": {
+   "problems": 15,
+   "natural": {
+    "robust": 12,
+    "non_robust": 2,
+    "ambiguous": 1
+   },
+   "forced": {
+    "robust": 12,
+    "non_robust": 2,
+    "ambiguous": 1
+   },
+   "samples_per_version": [
+    8
+   ]
+  },
+  "Skywork/Skywork-OR1-Math-7B": {
+   "problems": 70,
+   "natural": {
+    "robust": 54,
+    "non_robust": 8,
+    "ambiguous": 8
+   },
+   "forced": {
+    "robust": 54,
+    "non_robust": 8,
+    "ambiguous": 8
+   },
+   "samples_per_version": [
+    8
+   ]
+  }
+ }
+}

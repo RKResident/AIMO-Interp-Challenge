@@ -1,0 +1,16 @@
+pid,source,n_original,n_rephrase,n_rename,n_distract,n_domain,n_typos,acc_original_natural,acc_rephrase_natural,acc_rename_natural,acc_distract_natural,acc_domain_natural,acc_typos_natural,max_drop_natural,worst_natural,unsolved_natural,label_natural,acc_original_forced,acc_rephrase_forced,acc_rename_forced,acc_distract_forced,acc_domain_forced,acc_typos_forced,max_drop_forced,worst_forced,unsolved_forced,label_forced
+ez0009,MathArena/aime_2025,8,8,8,8,8,8,0.75,0.75,0.875,0.75,0.375,0.625,0.375,domain,False,non_robust,1.0,0.875,0.875,0.75,0.875,0.75,0.25,distract,False,non_robust
+ez0011,MathArena/aime_2025,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+ez0013,MathArena/aime_2025,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+ez0014,MathArena/aime_2025,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+ez0026,MathArena/hmmt_feb_2025,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+ez0029,MathArena/hmmt_feb_2025,8,8,8,8,8,8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.25,0.125,0.375,0.125,0.125,0.125,0.125,rephrase,False,ambiguous
+ez0036,MathArena/hmmt_feb_2025,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+hp0034,ByteDance-Seed/BeyondAIME,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+hp0057,ByteDance-Seed/BeyondAIME,8,8,8,8,8,8,0.5,0.0,0.125,0.25,0.0,0.5,0.5,rephrase,False,non_robust,1.0,1.0,0.75,0.875,1.0,1.0,0.25,rename,False,non_robust
+hp0063,ByteDance-Seed/BeyondAIME,8,8,8,8,8,8,0.625,0.625,0.5,0.875,1.0,0.875,0.125,rename,False,ambiguous,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+hp0065,ByteDance-Seed/BeyondAIME,8,8,8,8,8,8,0.75,0.875,1.0,0.875,0.875,1.0,-0.125,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+hp0066,ByteDance-Seed/BeyondAIME,8,8,8,8,8,8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust
+hp0232,MathArena/final_answer_comps,8,8,8,8,8,8,0.875,0.875,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,0.875,1.0,1.0,1.0,1.0,1.0,-0.125,rephrase,False,robust
+hp0242,MathArena/final_answer_comps,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+hp0276,MathArena/smt_2025,8,8,8,8,8,8,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust

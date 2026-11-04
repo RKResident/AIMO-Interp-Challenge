@@ -23,6 +23,9 @@ __pycache__/
 !/submitted_solutions/permodel-v8-ent4096-small.zip
 !/submitted_solutions/permodel-v8-ent4096-olmoseg25-small.zip
 
+# ---------------------------------------------------------------- our labelled robustness datasets (compiled by analysis/build_datasets.py)
+!/datasets/
+
 # ---------------------------------------------------------------- top-level extraction code and the zip builder
 !/extract_features.py
 !/extract_trajectories_v3.py
@@ -65,6 +68,14 @@ __pycache__/
 # are happy for the repo to show how the leaderboard numbers of unsubmitted variants were computed.
 /analysis/report_ablation.py
 /analysis/report_figs.py
+/analysis/report_mcnemar.py
+/analysis/report_appendix_ablations.py
+/analysis/report_owndata.py
+/analysis/report_distfigs.py
+/analysis/report_recal.py
+/analysis/report_wbonly.py
+/analysis/exp121_selection.py
+/analysis/exp121b_c3_lb.py
 /analysis/exp48_leaderboard_signal.py
 /analysis/exp62_unfinished_sign_stability.py
 /analysis/exp65_candidate_calls.py

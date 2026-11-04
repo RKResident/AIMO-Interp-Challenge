@@ -68,7 +68,10 @@ Colours: blue = robust (or the full submission), orange = non-robust (or the var
 ![fig6](fig6_whitebox_ablation.png)
 
 - **What:** accuracy of each variant in Table 3: all-robust; text only; text + output (no internals; S1 and S2 coincide there); text + internal (no output) for S1 and S2; and the full S1 and S2. Main and the leaderboard are side-by-side panels with one shared scale, and numbers are correct counts. Colours: grey = baselines, orange = no internals, green = no output, blue = full.
-- **Shows:** on the leaderboard neither group alone gets close to the full submissions: output only 0.86, internal only 0.71–0.79, both 1.00 / 0.93. On Main the output-only variant (35) sits between S1 (33) and S2 (36); internal only is at or below all-robust.
+- **Shows** (corrected 2026-11-04: an earlier version flipped the sign of Olmo's novel-branch feature in the no-internals variant):
+  - Text + output already matches S1 on both sets (33 and 14/14).
+  - Removing the output features instead drops the leaderboard to 0.71–0.79.
+  - Of the internal readouts, only S2's Olmo direction changes the totals: +3 Main rows, −1 leaderboard problem.
 - **Suggested place:** Section 5.1 (it could replace Table 3 to save space, or sit in the appendix next to it).
 
 ## Fig. 7: Pipeline schematic

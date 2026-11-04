@@ -1,0 +1,36 @@
+pid,source,n_original,n_rephrase,n_rename,n_distract,n_domain,n_typos,acc_original_natural,acc_rephrase_natural,acc_rename_natural,acc_distract_natural,acc_domain_natural,acc_typos_natural,max_drop_natural,worst_natural,unsolved_natural,label_natural,acc_original_forced,acc_rephrase_forced,acc_rename_forced,acc_distract_forced,acc_domain_forced,acc_typos_forced,max_drop_forced,worst_forced,unsolved_forced,label_forced
+oly005,AIME 2026,8,4,4,4,4,4,0.375,0.5,0.25,0.75,1.0,0.5,0.125,rename,False,ambiguous,0.375,0.5,0.25,0.75,1.0,0.5,0.125,rename,False,ambiguous
+oly006,AIME 2026,8,4,4,4,4,4,0.875,1.0,0.5,1.0,1.0,1.0,0.375,rename,False,non_robust,0.875,1.0,0.5,1.0,1.0,1.0,0.375,rename,False,non_robust
+oly016,AIME 2026,8,4,4,4,4,4,0.75,0.0,0.0,0.5,0.5,0.75,0.75,rephrase,False,non_robust,0.75,0.0,0.0,0.5,0.5,0.75,0.75,rephrase,False,non_robust
+oly017,AIME 2026,8,4,4,4,4,4,0.375,0.0,0.0,0.25,0.0,0.0,0.375,rephrase,False,non_robust,0.375,0.0,0.0,0.25,0.0,0.0,0.375,rephrase,False,non_robust
+oly018,AIME 2026,8,4,4,4,4,4,0.75,1.0,1.0,1.0,1.0,1.0,-0.25,rephrase,False,robust,0.75,1.0,1.0,1.0,1.0,1.0,-0.25,rephrase,False,robust
+oly019,AIME 2026,8,4,4,4,4,4,0.5,0.5,0.25,0.5,0.5,0.75,0.25,rename,False,non_robust,0.5,0.5,0.25,0.5,0.5,0.75,0.25,rename,False,non_robust
+oly023,AIME 2026,8,4,4,4,4,4,0.125,0.0,0.0,0.5,0.25,0.0,0.125,rephrase,False,ambiguous,0.125,0.0,0.0,0.5,0.25,0.0,0.125,rephrase,False,ambiguous
+oly024,AIME 2026,8,4,4,4,4,4,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+oly025,AIME 2026,8,4,4,4,4,4,0.875,0.75,1.0,0.75,0.75,1.0,0.125,rephrase,False,ambiguous,0.875,0.75,1.0,0.75,0.75,1.0,0.125,rephrase,False,ambiguous
+oly026,AIME 2026,8,4,4,4,4,4,0.25,0.5,0.5,0.5,0.5,1.0,-0.25,rephrase,False,robust,0.25,0.5,0.5,0.5,0.5,1.0,-0.25,rephrase,False,robust
+oly027,AIME 2026,8,4,4,4,4,4,0.875,1.0,0.75,0.5,0.5,0.5,0.375,distract,False,non_robust,0.875,1.0,0.75,0.5,0.5,0.5,0.375,distract,False,non_robust
+oly028,AIME 2026,8,4,4,4,4,4,0.125,0.0,0.25,0.0,0.25,0.25,0.125,rephrase,False,ambiguous,0.125,0.0,0.25,0.0,0.25,0.25,0.125,rephrase,False,ambiguous
+oly032,AIME 2026,8,4,4,4,4,4,1.0,1.0,0.75,1.0,1.0,1.0,0.25,rename,False,non_robust,1.0,1.0,0.75,1.0,1.0,1.0,0.25,rename,False,non_robust
+oly036,AIME 2025,8,4,4,4,4,4,0.125,0.0,0.25,0.5,0.0,0.75,0.125,rephrase,False,ambiguous,0.125,0.0,0.25,0.5,0.0,0.75,0.125,rephrase,False,ambiguous
+oly042,AIME 2025,8,4,4,4,4,4,0.875,1.0,1.0,1.0,1.0,1.0,-0.125,rephrase,False,robust,0.875,1.0,1.0,1.0,1.0,1.0,-0.125,rephrase,False,robust
+oly043,AIME 2025,8,4,4,4,4,4,0.875,1.0,0.75,1.0,1.0,0.75,0.125,rename,False,ambiguous,0.875,1.0,0.75,1.0,1.0,0.75,0.125,rename,False,ambiguous
+oly044,AIME 2025,8,4,4,4,4,4,0.125,0.5,0.5,0.25,0.75,0.25,-0.125,distract,False,robust,0.125,0.5,0.5,0.25,0.75,0.25,-0.125,distract,False,robust
+oly046,AIME 2025,8,4,4,4,4,4,0.875,1.0,0.5,0.75,0.75,0.75,0.375,rename,False,non_robust,0.875,1.0,0.5,0.75,0.75,0.75,0.375,rename,False,non_robust
+oly047,AIME 2025,8,4,4,4,4,4,0.125,0.0,0.25,0.0,0.25,0.0,0.125,rephrase,False,ambiguous,0.125,0.0,0.25,0.0,0.25,0.0,0.125,rephrase,False,ambiguous
+oly048,AIME 2025,8,4,4,4,4,4,1.0,0.75,1.0,1.0,1.0,1.0,0.25,rephrase,False,non_robust,1.0,0.75,1.0,1.0,1.0,1.0,0.25,rephrase,False,non_robust
+oly050,AIME 2025,8,4,4,4,4,4,0.375,0.75,0.75,0.25,0.5,0.5,0.125,distract,False,ambiguous,0.375,0.75,0.75,0.25,0.5,0.5,0.125,distract,False,ambiguous
+oly051,AIME 2025,8,4,4,4,4,4,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+oly053,AIME 2025,8,4,4,4,4,4,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+oly055,AIME 2025,8,4,4,4,4,4,0.5,0.25,0.75,0.25,0.25,0.25,0.25,rephrase,False,non_robust,0.5,0.25,0.75,0.25,0.25,0.25,0.25,rephrase,False,non_robust
+oly056,HMMT Feb 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust
+oly062,HMMT Feb 2026,8,4,4,4,4,4,0.125,0.0,0.25,0.25,0.0,0.0,0.125,rephrase,False,ambiguous,0.125,0.0,0.25,0.25,0.0,0.0,0.125,rephrase,False,ambiguous
+oly065,HMMT Feb 2026,8,4,4,4,4,4,0.875,0.75,0.75,0.75,0.75,0.75,0.125,rephrase,False,ambiguous,0.875,0.75,0.75,0.75,0.75,0.75,0.125,rephrase,False,ambiguous
+oly066,HMMT Feb 2026,8,4,4,4,4,4,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+oly067,HMMT Feb 2026,8,4,4,4,4,4,0.875,1.0,1.0,1.0,1.0,1.0,-0.125,rephrase,False,robust,0.875,1.0,1.0,1.0,1.0,1.0,-0.125,rephrase,False,robust
+oly068,HMMT Feb 2025,8,4,4,4,4,4,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+oly069,HMMT Feb 2025,8,4,4,4,4,4,0.125,0.0,0.0,0.25,0.0,0.0,0.125,rephrase,False,ambiguous,0.125,0.0,0.0,0.25,0.0,0.0,0.125,rephrase,False,ambiguous
+oly074,HMMT Feb 2025,8,4,4,4,4,4,0.125,0.0,0.0,0.0,0.0,0.0,0.125,rephrase,False,ambiguous,0.125,0.0,0.0,0.0,0.0,0.0,0.125,rephrase,False,ambiguous
+oly075,HMMT Feb 2025,8,4,4,4,4,4,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust,1.0,1.0,1.0,1.0,1.0,1.0,0.0,rephrase,False,robust
+oly077,HMMT Feb 2025,8,4,4,4,4,4,0.875,0.75,1.0,0.75,0.5,1.0,0.375,domain,False,non_robust,0.875,0.75,1.0,0.75,0.5,1.0,0.375,domain,False,non_robust
+oly078,HMMT Feb 2025,8,4,4,4,4,4,0.125,0.0,0.0,0.0,0.25,0.0,0.125,rephrase,False,ambiguous,0.125,0.0,0.0,0.0,0.25,0.0,0.125,rephrase,False,ambiguous

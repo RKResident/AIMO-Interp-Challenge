@@ -1,0 +1,16 @@
+pid,source,n_original,n_rephrase,n_rename,n_distract,n_domain,n_typos,acc_original_natural,acc_rephrase_natural,acc_rename_natural,acc_distract_natural,acc_domain_natural,acc_typos_natural,max_drop_natural,worst_natural,unsolved_natural,label_natural,acc_original_forced,acc_rephrase_forced,acc_rename_forced,acc_distract_forced,acc_domain_forced,acc_typos_forced,max_drop_forced,worst_forced,unsolved_forced,label_forced
+oly007,AIME 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.375,0.5,0.25,0.25,0.25,0.25,0.125,rename,False,ambiguous
+oly008,AIME 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.125,0.0,0.0,0.25,0.25,0.25,0.125,rephrase,False,ambiguous
+oly013,AIME 2025,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust
+oly014,AIME 2025,8,4,4,4,4,4,0.5,0.5,0.25,1.0,0.75,0.5,0.25,rename,False,non_robust,1.0,0.75,0.75,1.0,0.75,1.0,0.25,rephrase,False,non_robust
+oly016,AIME 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.125,0.0,0.0,0.0,0.0,0.0,0.125,rephrase,False,ambiguous
+oly017,AIME 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.125,1.0,0.25,0.25,0.0,0.75,0.125,domain,False,ambiguous
+oly019,AIME 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.25,0.0,0.25,0.25,0.25,0.0,0.25,rephrase,False,non_robust
+oly027,AIME 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.25,0.25,0.25,0.25,0.5,0.5,0.0,rephrase,False,robust
+oly055,AIME 2025,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.125,0.0,0.0,0.0,0.5,0.0,0.125,rephrase,False,ambiguous
+oly062,HMMT Feb 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.625,0.5,0.75,0.75,0.75,0.5,0.125,rephrase,False,ambiguous
+oly065,HMMT Feb 2026,8,4,4,4,4,4,0.125,0.25,0.0,0.0,0.0,0.25,0.125,rename,False,ambiguous,0.75,1.0,1.0,1.0,0.5,1.0,0.25,domain,False,non_robust
+oly066,HMMT Feb 2026,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,1.0,1.0,0.25,1.0,0.75,0.75,0.75,rename,False,non_robust
+oly069,HMMT Feb 2025,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.625,0.5,0.5,0.75,0.5,0.75,0.125,rephrase,False,ambiguous
+oly070,HMMT Feb 2025,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust
+oly073,HMMT Feb 2025,8,4,4,4,4,4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,rephrase,True,robust,0.125,0.0,0.0,0.0,0.25,0.25,0.125,rephrase,False,ambiguous
