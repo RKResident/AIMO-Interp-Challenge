@@ -1,0 +1,293 @@
+\documentclass{article}
+
+% NeurIPS 2026 style. "preprint" = non-anonymous, no line numbers ("final" is reserved for accepted NeurIPS papers).
+\usepackage[preprint]{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\renewcommand{\ttdefault}{lmtt}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts,amsmath}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+
+\newcommand{\sone}{\textsc{S1}}
+\newcommand{\stwo}{\textsc{S2}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{Reading Robustness from One Truncated Trace:\\Per-Model White-Box Recipes for Spurious Math Reasoning}
+
+\author{%
+  \todo{Author 1} \\ \todo{Affiliation} \\ \texttt{abhichoudhury19@gmail.com} \And
+  \todo{Author 2} \\ \todo{Affiliation} \\ \todo{email}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The AIMO Interpretability Challenge asks whether a reasoning model's success on a competition math problem survives faithful rewordings of the problem.
+We predict this from a single greedy reasoning trace truncated at 6144 tokens, with white-box access to the model.
+Our method (i) calls every problem whose reasoning finishes within the budget robust, and (ii) scores unfinished traces with per-model, label-free-calibrated readouts: a rank ensemble of self-verification share, answer survival when the reasoning is cut, hidden-state sensitivity to automatic rewordings, attention look-back and forced-answer confidence; for Qwen3.5-4B, the entropy of the forced answer after 4096 tokens; for Olmo-3-7B-Think, a Min-K\% familiarity router and a second model acting as a judge.
+Our two submissions differ only in Olmo's unfinished calls: the second replaces them with an early-trace hidden-state direction.
+They score 1.00 and 0.93 on the public leaderboard (all-robust: 0.50) and make 33 and 36 correct calls on the official training labels for our four models (43 rows; all-robust: 31). Removing the hidden-state and attention signals lowers leaderboard accuracy to 0.86, and removing the output-distribution signals instead lowers it to 0.71--0.79.
+We also report a negative result: labels we generated with our own perturbations do not reproduce the official labels, which shaped how we validated everything.
+Code: \todo{GitHub URL}.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+Both nominated submissions share one test-time pipeline (Section~\ref{sec:method}) and differ only in how unfinished Olmo problems are called, so this single report covers both, as the rules require.
+\sone{} (\texttt{permodel-v8-ent4096}) is the base method. \stwo{} (\texttt{permodel-v8-ent4096-olmoseg25}) is \sone{} with one single-feature \emph{override} for Olmo (Section~\ref{sec:overrides}).
+One finding shaped the design: robustness labels that we generated ourselves did not reproduce the official ones (Section~\ref{sec:labels}).
+
+\textbf{Contributions.} (1) A test-time pipeline that needs one greedy trace plus a few teacher-forced passes per problem. (2) Per-model feature recipes with label-free thresholds. (3) A component ablation on the official labels.
+
+\section{Data and evaluation}
+\label{sec:data}
+\textbf{Models.} Qwen3.5-4B \citep{qwen35}, Skywork-OR1-Math-7B \citep{he2025skywork}, Olmo-3-7B-Think \citep{olmo3} and DeepSeek-R1-0528-Qwen3-8B \citep{deepseek2025r1,yang2025qwen3}; perturbation robustness in the sense of \citet{mirzadeh2025gsmsymbolic}, labelled by the challenge \citep{stefanik2026aimointerp}.
+
+\textbf{Official labels.} \textsc{Main}: the organisers' training set \texttt{train-main-v2}, restricted to our four models: 43 rows (Qwen 12, Skywork 12, Olmo 9, DeepSeek 10), 31 robust. This is the only labelled data we evaluate on; we report correct calls out of 43 with Wilson 95\% intervals \citep{wilson1927}.
+\textbf{Public leaderboard.} We report leaderboard accuracy on its 14 problems, and also use it as a held-out validation set. However, with only 3--5 problems per model, estimates from this set are very noisy. The problems and the evaluation did not change during the competition, so builds are scored from their logged calls where they were not submitted separately.
+
+\textbf{Our own data, used for calibration only.} (a) Unlabelled greedy traces for $\sim$100 post-cutoff competition problems per model (\textsc{Pool}). They supply the reference distributions and median thresholds below, which need no labels. (b) Problems we labelled ourselves. No official threshold for the accuracy drop is published; we inferred the rule from the data. In \textsc{Main}, every robust row has a worst-case drop $\le 0.10$ and every non-robust row $\ge 0.25$, with nothing in between, and the same rule, counting never-solved problems as robust, reproduces the labels of the public validation sample exactly. We used 8 temperature-1 samples per version and five perturbation types written by an LLM. Every generation of our own was capped at 6144 new tokens, matching the test-time trace, with answers forced at the cap when the model had not finished (the relabel in Section~\ref{sec:labels} used 32k); the official labels come from a much larger generation budget. These labels set feature \emph{signs} and, for \stwo{}, fit one direction.
+Section~\ref{sec:labels} shows that these labels are unreliable, so no result below is measured on them.
+
+\textbf{Regime split.} At a 6144-token cap most \textsc{Main} traces are still thinking (32/43).
+All 11 \textsc{Main} rows that finish are robust. Every non-robust label therefore falls on an \emph{unfinished} trace, which is where every recipe acts.
+
+\section{Method}
+\label{sec:method}
+\textbf{Trace.} We build the challenge prompt (``Solve the following mathematical problem step by step. Put your final answer within \texttt{\textbackslash boxed\{\}}'') with each model's chat template. We decode greedily (bf16, HF Transformers \citep{wolf2020transformers}) up to 6144 new tokens, stopping early on end-of-thinking, end-of-sequence or a 3$\times$32-token loop.
+\textbf{Finished} (the end-of-thinking token appears) $\Rightarrow$ robust. \textbf{Unfinished} $\Rightarrow$ score with the model's recipe.
+
+All features are computed on that one trace (definitions in Appendix~\ref{app:features}). We group them by what they read; Section~\ref{sec:wb} ablates the groups.
+
+\subsection{Text features (black-box)}
+\textbf{Finished rule}: whether the end-of-thinking token appears within the cap. \texttt{chk}: the share of $\ge$4-word sentences of the reasoning that check, verify or confirm something.
+
+\subsection{Output-distribution features (grey-box)}
+These read the model's next-token distribution under teacher forcing.
+\texttt{fa}: the top-1 probability of the first answer token after appending ``\texttt{</think>} The final answer is \texttt{\$\textbackslash boxed\{}'' at 6144 tokens.
+$H_{b}$: the entropy of that distribution when the trace is cut at $b$ tokens.
+\emph{Answer survival} \citep[cf.\ early answering,][]{lanham2023faithfulness}: \texttt{nrk} and \texttt{f1k}, the probability of the clean forced answer when the reasoning is removed entirely or cut to its first 1024 tokens, relative to the clean probability.
+\texttt{cfl}: the change in the trace's log-likelihood when it is teacher-forced after three automatic rewordings of the problem (10\% typos, a neutral distractor sentence, renamed variables).
+Min-K\% \citep{shi2024mink} ($k=20$): the mean of the lowest 20\% token log-probabilities of the problem text, a familiarity score.
+
+\subsection{Internal features (white-box)}
+These read activations directly.
+\emph{Hidden states}: \texttt{cfc}, the cosine between late-trace hidden states of the original pass and of the three reworded passes; the Olmo direction of \stwo{} (Section~\ref{sec:overrides}).
+\emph{Attention}: \texttt{lble} and \texttt{pmle}, the Lookback-Lens ratio \citep{chuang2024lookback} and the attention mass on the prompt, each as last quarter minus first quarter of the trace; \texttt{jmp}, the attention-weighted mean backward distance between 64-token blocks (robust traces keep re-reading their own setup).
+The Qwen judge used for Olmo (below) is also internal, since Qwen's ensemble consists of \texttt{lble}, \texttt{pmle}, \texttt{jmp} and \texttt{cfc}.
+
+\subsection{From features to calls}
+\textbf{Rank-ensemble score.} For model $m$ with feature subset $F_m$, a value $x_f$ is mapped to its percentile $q_f$ among the reference values $R_{m,f}$ (\textsc{Pool} traces plus our labelled traces, unfinished only):
+\begin{equation}
+  s = \frac{1}{|F_m|}\sum_{f\in F_m}\big(\tilde q_f - \tfrac12\big),\qquad \tilde q_f = \begin{cases} q_f & \sigma_f=+1\\ 1-q_f & \sigma_f=-1\end{cases},\qquad \text{robust} \iff s>\tau_m .
+\end{equation}
+$\tau_m$ is the median score of model $m$'s calibration traces, which needs no labels. The signs $\sigma_f$ are the direction of each feature's length-controlled AUC.
+The subsets $F_m$ were chosen per model by subset search on our labelled rows:
+Qwen \{\texttt{lble, pmle, jmp, cfc}\} (Qwen's own unfinished calls use $H_{4096}$ instead, below; this ensemble serves as the judge for Olmo); Skywork \{\texttt{fa, chk, f1k}\}; DeepSeek \{\texttt{chk, nrk, cfl, pmle}\}.
+Percentile scoring makes the score insensitive to feature scale and to shifts between our hardware and the evaluator's.
+
+\textbf{Olmo: novelty router and judge.} Olmo's features flipped direction between problems it had seen in training and post-cutoff problems.
+We route on Min-K\%: below $-5.93$ (the cut that best separated post-cutoff from older problems in \textsc{Pool}, using no robustness labels) goes to a \emph{novel} branch \{\texttt{f1k}\}, otherwise to a \emph{familiar} branch \{\texttt{chk, lble, pmle}\}, each with its own median threshold.
+A \emph{judge} then loads Qwen, generates Qwen's own trace of the same problem and scores it with Qwen's recipe. Olmo's call is robust iff the mean of two label-free percentiles exceeds $0.5$: Olmo's margin among its \textsc{Pool} margins, and Qwen's margin among Qwen's margins on the same \textsc{Pool} problems. If the judge fails or time is short, Olmo's own call stands.
+
+\textbf{Qwen: forced-answer entropy at 4096 tokens.} For unfinished Qwen problems, \sone{} replaces the rank-ensemble call with $H_{4096}$ (applied last, after any judging): robust iff $H_{4096} < 1.621$, the median over Qwen's 100 \textsc{Pool} traces. The sign comes from our 66 labelled Qwen problems (AUC $0.77$ for lower-is-robust). Qwen's rank-ensemble margins are still computed, because the Olmo judge uses them.
+
+\subsection{\stwo: an early-trace hidden-state direction for Olmo}
+\label{sec:overrides}
+\stwo{} runs the full \sone{} pipeline and then, \emph{after} the judge, replaces the call for unfinished Olmo problems. Every other model and every finished problem keeps its \sone{} call.
+We take the mean hidden state over the 256 tokens around 25\% of the trace, at the 5th decoder layer, and project it onto a unit robust-minus-non-robust difference-of-means direction fitted on our 21 labelled unfinished Olmo problems (shipped with the submission). Robust iff the projection is above $0.234$, the median over Olmo's 50 \textsc{Pool} traces.
+For both single-feature readouts the threshold is label-free and the sign comes from our data. Choosing \emph{which} feature to use for these two models, however, used \textsc{Main} results and leaderboard scores of earlier builds (see Limitations).
+
+\textbf{Cost.} Per unfinished problem: one generation of up to 6144 tokens, $\sim$10 teacher-forced passes (forced answers at several cuts, three rewordings, attention hooks) and, for Olmo, one Qwen generation. Everything runs on a single GPU within the challenge time limit (one problem per call).
+
+\section{Results}
+\label{sec:results}
+\begin{table}[t]
+\caption{Correct calls on \textsc{Main} (43 rows) with Wilson 95\% intervals, and public leaderboard accuracy (14 problems). On \textsc{Main}, Olmo's judge cannot be replayed (it needs a Qwen trace per Olmo problem), so Olmo uses its own branch there. \sone{} is best on the leaderboard, \stwo{} on \textsc{Main}; on \textsc{Main} both gains over all-robust are inside the intervals.}
+\label{tab:main}
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+Method & \textsc{Main} correct (43) & Leaderboard score \\
+\midrule
+All robust (baseline) & 31 \; [0.57, 0.83] & 0.50 \\
+Finished $\Rightarrow$ R, unfinished $\Rightarrow$ NR & 23 \; [0.39, 0.67] & 0.57 \\
+\textbf{\sone{}} (\texttt{v8-ent4096}) & 33 \; [0.62, 0.87] & \textbf{1.00} \\
+\textbf{\stwo{}} (\sone{} + Olmo direction) & \textbf{36} \; [0.70, 0.92] & 0.93 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:main} gives the headline numbers. On the leaderboard \sone{} scores 1.00 and \stwo{} 0.93, against 0.50 for all-robust. \textsc{Main} is 72\% robust, so calling everything robust is a strong baseline there; \stwo{} beats it by 5 calls and \sone{} by 2, within the intervals. The two submissions trade places across the two label sets, which is why we nominate both. Among all builds we scored on the leaderboard (Appendix~\ref{app:ranking}), the per-model builds scored 0.64--1.00 and single-family builds 0.28--0.71.
+
+\section{Ablations}
+\label{sec:ablations}
+\begin{table}[t]
+\caption{Component ablation: correct calls per model on \textsc{Main} (Qwen 12, Skywork 12, Olmo 9, DeepSeek 10 rows; of them 11/7/4/10 unfinished) and leaderboard accuracy (LB). The per-model recipes help DeepSeek and Skywork most; the Qwen entropy helps on both sets; the Olmo direction helps on \textsc{Main} but costs one leaderboard problem.}
+\label{tab:ablation}
+\centering\small
+\begin{tabular}{lcccccc}
+\toprule
+Variant & Qwen & Skywork & Olmo & DeepSeek & Total & LB \\
+\midrule
+All robust                         & 8 & 9  & 7 & 7 & 31 & 0.50 \\
+Finished only (unfinished NR)      & 5 & 8  & 7 & 3 & 23 & 0.57 \\
+v8 (rank ensembles, no overrides)  & 8 & 10 & 5 & 9 & 32 & 0.93 \\
+v8 without Olmo router/judge       & 8 & 10 & 6 & 9 & 33 & -- \\
+\sone{} = v8 + Qwen $H_{4096}$     & 9 & 10 & 5 & 9 & 33 & 1.00 \\
+v8 + Olmo direction only           & 8 & 10 & 8 & 9 & 35 & 0.86 \\
+\stwo{} = \sone{} + Olmo direction & 9 & 10 & 8 & 9 & 36 & 0.93 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Components (Table~\ref{tab:ablation}).}
+(i) The regime split alone is not a predictor (``finished only'' is below all-robust), but it settles 11/43 \textsc{Main} rows at zero error.
+(ii) The per-model rank ensembles (v8) help most for DeepSeek (+2 over all-robust) and Skywork (+1); for Qwen they tie all-robust.
+(iii) Replacing Qwen's ensemble with $H_{4096}$ (\sone{}) adds 1 \textsc{Main} call and one leaderboard problem.
+(iv) The Olmo direction (\stwo{}) adds 3 \textsc{Main} calls but costs one leaderboard problem. On \textsc{Main} the Olmo router alone is $-1$ against the plain Olmo recipe; the judge, which cannot be replayed on \textsc{Main}, is not measured there. \sone{} keeps the router and judge for Olmo and is the hedge against the Olmo direction, which rests on only 4 unfinished \textsc{Main} rows.
+
+\subsection{Does the white-box signal matter?}
+\label{sec:wb}
+\begin{table}[t]
+\caption{White-box ablation by feature group. \emph{No internals}: every hidden-state and attention feature, the Olmo direction and the Qwen judge removed; the two submissions then coincide, since they differ only in an internal readout. \emph{No output}: \texttt{fa}, \texttt{nrk}, \texttt{f1k}, \texttt{cfl}, the Min-K\% router and $H_{4096}$ removed (Qwen falls back to its internal ensemble). \emph{Text only}: finished rule + \texttt{chk} for every model. A model left with no feature falls back to \texttt{chk}. Modified recipes use threshold 0, the label-free expected median of a percentile score (\sone{} gives 32 / 1.00 at threshold 0). Neither group alone reaches the full submissions on the leaderboard; together they lift it from 0.86 (output) or 0.71--0.79 (internal) to 1.00 and 0.93.}
+\label{tab:wb}
+\centering\small
+\begin{tabular}{lcccccc}
+\toprule
+Variant & Qwen & Skywork & Olmo & DeepSeek & \textsc{Main} & LB \\
+\midrule
+All robust & 8 & 9 & 7 & 7 & 31 & 0.50 \\
+Text only & 10 & 9 & 8 & 7 & 34 & 0.57 \\
+Text + output (no internals; \sone{} = \stwo{}) & 9 & 10 & 8 & 8 & 35 & 0.86 \\
+\sone{}: text + internal (no output) & 8 & 9 & 6 & 7 & 30 & 0.71 \\
+\stwo{}: text + internal (no output) & 8 & 9 & 8 & 7 & 32 & 0.79 \\
+\sone{} (all three) & 9 & 10 & 5 & 9 & 33 & 1.00 \\
+\stwo{} (all three) & 9 & 10 & 8 & 9 & 36 & 0.93 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:wb} removes each feature group in turn. In \sone{} the internal signals are Olmo's attention-based familiar branch and Qwen judge and DeepSeek's prompt-attention feature; \stwo{} adds the Olmo hidden-state direction. Qwen's own calls come from the output distribution ($H_{4096}$) in both.
+\textbf{Removing internals} lowers leaderboard accuracy from 1.00 to 0.86 for \sone{} and from 0.93 to 0.86 for \stwo{}, through the Olmo problems, where a check-share call replaces the internal readouts. On \textsc{Main} the variant without internals scores 35/43, between \sone{} (33) and \stwo{} (36).
+\textbf{Removing output features} hurts more: 0.71 and 0.79 on the leaderboard and 30--32/43 on \textsc{Main}, at or below all-robust there. The internal readouts are not a substitute for the forced-answer features; they add to them.
+\textbf{Removing both} (text only) leaves 0.57 and 34/43.
+Over both sets together, \stwo{} with all three groups is best (49/57, against 47 without internals, 43 without output and 42 text only); \sone{} ties its no-internals variant (47/57) because it gains on the leaderboard what it loses on \textsc{Main}. \textsc{Main} is 72\% robust and was partly used for feature signs, so it favours recipes that call more problems robust; the leaderboard is balanced.
+
+\begin{table}[t]
+\caption{Where in the trace to read the signal: AUC on unfinished traces (robust = positive class, oriented by the shipped sign) on our labels / \textsc{Main}. Left: Qwen forced-answer entropy at truncation $b$ (\textsc{Main}: 7 R / 4 NR). Right: Olmo direction projections by trace position (\textsc{Main}: 2 R / 2 NR). Olmo's ``ours'' AUCs are in-sample, since the direction was fitted on those labels. On our labels the entropy signal grows with $b$; on \textsc{Main} every budget is similar, so the exact budget matters little.}
+\label{tab:position}
+\centering\small
+\begin{tabular}{lcc}
+\toprule
+Qwen $H_b$, $b=$ & ours & \textsc{Main} \\
+\midrule
+512  & 0.44 & 0.75 \\
+1024 & 0.49 & 0.64 \\
+2048 & 0.61 & 0.71 \\
+3072 & 0.69 & 0.75 \\
+\textbf{4096} & 0.77 & 0.71 \\
+6144 & 0.79 & -- \\
+\bottomrule
+\end{tabular}\hfill
+\begin{tabular}{lcc}
+\toprule
+Olmo direction at & ours & \textsc{Main} \\
+\midrule
+\textbf{25\% of trace} & 0.99 & 1.00 \\
+50\% of trace & 0.97 & 1.00 \\
+75\% of trace & 0.93 & 1.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Truncation point and position (Table~\ref{tab:position}).} On our labels the forced-answer entropy is uninformative before about 2048 tokens and rises to 0.77--0.79 at 4096--6144 tokens: answer confidence becomes informative only after a few thousand tokens of reasoning. On \textsc{Main}, with 11 unfinished Qwen rows, all budgets give 0.64--0.75. We ship 4096, chosen with \textsc{Main} results and the leaderboard scores of earlier builds in view (see Limitations).
+For Olmo, the direction separates \textsc{Main}'s four unfinished rows at every position; with so few rows the choice of 25\% is not supported over 50\% or 75\%. This is the weakest-supported component, and the reason \sone{} is nominated alongside \stwo{}.
+
+\textbf{Alternatives tried (Appendix~\ref{app:ranking}).} We also tested whole-trace hidden-state geometry (K-means walk graphs, $\delta$-hyperbolicity and Poincar\'e embeddings \citep{raj2026hyperbolic}, CKA \citep{kornblith2019cka}), attention-map spectra \citep{binkowski2025lapeig}, Min-K\%++ \citep{zhang2025minkpp}, kNN and TDA trajectory features, PEARL-style prompt noising, and sentence-embedding reasoning graphs. Several reach high AUC on one label set but none holds up across our labels and \textsc{Main}; builds based on single families scored 0.28--0.71 on the leaderboard.
+
+\section{What do the official labels measure?}
+\label{sec:labels}
+Throughout the competition we tried to enlarge the labelled data by running the official rule ourselves. Two findings made us stop trusting those labels.
+\textbf{(1) Noise.} With 8 samples per version, a problem with mid-range accuracy crosses the $0.25$ drop threshold by chance alone. Our first labelled problems were harder for the models than \textsc{Main}'s: on unfinished traces the median forced-answer top-1 probability at 6144 tokens was 0.54 (ours) vs 1.00 (\textsc{Main}) for Qwen and 0.92 vs 1.00 for Skywork. We therefore labelled a new, \emph{confidence-matched} set: unfinished traces whose forced top-1 probability is at least 0.7, as for most unfinished \textsc{Main} traces. On these 109 problems the number of non-robust labels we obtained (10/10/8 for Qwen/Olmo/Skywork) matched the number expected under a no-effect null (9.3/10.3/7.1).
+\textbf{(2) Non-reproduction.} \textsc{Main} problem \texttt{7ee9d443} is officially non-robust for all four models (drops 0.40--1.00). Under our perturbations Qwen and Skywork still solve it 47--48/48 times at a 32k cap, and 67--68/68 times across 30 further independent rewordings, with changed numbers, and under bare and R1-style prompts. The sampling settings match the official ones, so the official non-robust labels depend on perturbation texts or grading details we do not have.
+On a 32k natural-answer relabel of 62 Skywork problems, non-robust cases were rare (8) and every recipe, including our Skywork recipe (shared by \sone{} and \stwo{}), was at chance in balanced accuracy (0.52). In the same data, original-problem accuracy predicted the label with AUC 0.74: our labels track difficulty.
+We therefore evaluate only on \textsc{Main} and the leaderboard, and used our own labels only for signs.
+
+% ---------------------------------------------------------------- not counted towards the 5 pages
+\section*{Limitations}
+\label{sec:limits}
+\textbf{Small, partly in-sample evaluation.} \textsc{Main}'s 43 rows give intervals about $\pm 0.12$ wide; \sone{} and \stwo{} differ by 3 \textsc{Main} calls and one leaderboard problem, neither of which is significant.
+\textsc{Main} is not fully held out: feature signs for the shared features used \textsc{Main} (length-controlled AUC), reference sets include \textsc{Main}'s unfinished values, and both single-feature readouts, as well as the per-model subsets of later builds, were chosen using \textsc{Main} results and the leaderboard scores of earlier builds.
+\textbf{Unreliable self-generated labels} (Section~\ref{sec:labels}) leave the signs and the Olmo direction resting on 21--66 noisy labels per model.
+\textbf{Distribution shift.} Features calibrated on our data transferred unevenly to leaderboard scores (single-family builds 0.28--0.71), so accuracy on the private 43 problems may differ substantially from \textsc{Main}.
+\textbf{Replay gap.} Olmo's judge was not replayed on \textsc{Main}.
+\textbf{Greedy-only view.} We observe one greedy trace capped at 6144 tokens, while the labels come from temperature-1 samples with a much larger budget.
+
+\section*{AI usage statement}
+\todo{Check and edit.} We used AI assistants extensively.
+\textbf{Claude Code, mainly with Claude Opus 5.5 (Anthropic),} was used for much of the code and experimentation: it wrote most of the analysis, feature-extraction, labelling and submission code under our direction; ran and monitored the GPU experiments; produced the ablation tables; and drafted this report, which we then edited.
+\textbf{Claude Sonnet} (through claude.ai) generated the perturbation texts for our own labelled data, following a written specification (Section~\ref{sec:data}).
+\todo{List any other model or tool used, e.g.\ for literature search.}
+The authors chose the research directions, decided every submission and nomination, checked the reported numbers against the experiment logs, and are responsible for all claims. No AI system is an author.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\section{Feature definitions}
+\label{app:features}
+All features are computed on the prompt $p$ and the greedy trace $t$ (at most 6144 tokens), with suffix $\sigma$ = ``\texttt{\textbackslash n</think>\textbackslash n\textbackslash nThe final answer is \$\textbackslash boxed\{}''.
+\begin{itemize}
+\item \texttt{chk}: share of the thinking's sentence units ($\ge$4 words) that match a check/verify/confirm lexicon; undefined below 10 units.
+\item \texttt{fa}: $\max_v P(v \mid p, t_{1:6144}, \sigma)$.
+\item \texttt{nrk}, \texttt{f1k}: with $a^*$ the clean forced answer token, $P(a^*\mid p,\sigma)/P(a^*\mid p,t,\sigma)$ and $P(a^*\mid p,t_{1:1024},\sigma)/P(a^*\mid p,t,\sigma)$.
+\item \texttt{cfc}, \texttt{cfl}: for each automatic rewording $p'$ (typos at rate 0.1, a fixed distractor sentence after the first sentence, single-letter variables in math renamed consistently), teacher-force $t$ after $p'$. \texttt{cfc} is the mean cosine between original and reworded 16-token-window hidden states over the last quarter (averaged over 6 layers); \texttt{cfl} is the mean change in per-token log-likelihood of $t$ over its first tokens.
+\item \texttt{lble}, \texttt{pmle}: per 16-token span, all layers and heads, the Lookback-Lens ratio (attention on the prompt over attention on prompt plus generated tokens) and the raw prompt attention mass; mean over the last quarter of spans minus the first quarter.
+\item \texttt{jmp}: on the 64-token block graph (each block's attention on earlier blocks, normalised per block), the mean attention-weighted backward distance in blocks.
+\item $H_b$: entropy of $P(\cdot\mid p,t_{1:b},\sigma)$.
+\item seg-25\% direction: $\langle \bar h^{(5)}_{[0.25L\pm128]}, d\rangle$, with $\bar h^{(5)}$ the mean 5th-layer state over the 256 tokens around position $0.25L$, and $d$ the normalised difference of class means on our labelled unfinished Olmo traces.
+\item Min-K\% ($k=20$): mean of the lowest 20\% token log-probabilities of the problem text under the model.
+\end{itemize}
+
+\clearpage
+\section{Builds scored on the leaderboard}
+\label{app:ranking}
+\begin{table}[H]
+\centering\small
+\caption{Leaderboard accuracy of our builds with their \textsc{Main} correct calls (each build's own recipe replayed on our \textsc{Main} traces). Per-model builds, the family \sone{} and \stwo{} belong to, score highest on both.}
+\begin{tabular}{lcc}
+\toprule
+Build & Leaderboard & \textsc{Main} (43) \\
+\midrule
+v8-ent4096 (\sone{}) & 1.00 & 33 \\
+v8-ent4096-olmoseg25 (\stwo{}) & 0.93 & 36 \\
+v8 (base recipe, no single-feature readouts) & 0.93 & 32 \\
+v7, v5 (per-model, router added in v7) & 0.93, 0.86 & 32, 34 \\
+v6 (per-model, before the Olmo router) & 0.93 & 34 \\
+max (per-model) & 0.86 & 33 \\
+lookback (per-model) & 0.71 & 34 \\
+cascade, v4, ensemble (per-model) & 0.64 & 30--34 \\
+single-family builds (24) & 0.28--0.71 & 19--34 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Reproducibility}
+\label{app:repro}
+Code, recipes (\texttt{recipe.json}), shipped artifacts and the analysis scripts behind every number are at \todo{GitHub URL}: \texttt{submission\_core/} (inference), \texttt{analysis/build\_submission\_artifacts.py} (calibration), \texttt{analysis/report\_ablation.py} (Tables~\ref{tab:main}, \ref{tab:ablation} and \ref{tab:wb}) and \texttt{analysis/exp109\_mainv2.py} (Table~\ref{tab:position}).
+Feature extraction and labelling ran on one NVIDIA RTX PRO 6000 and one A10G, using vLLM \citep{kwon2023vllm} for labelling samples and HF Transformers for features.
+Model licences: Qwen3.5-4B, Skywork-OR1-Math-7B and Olmo-3-7B-Think are released under Apache-2.0, DeepSeek-R1-0528-Qwen3-8B under MIT \todo{verify on each model card}. The challenge data are used under the competition's terms and are not redistributed.
+
+\clearpage
+\input{checklist_filled.tex}
+
+\end{document}

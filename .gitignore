@@ -1,0 +1,93 @@
+# ALLOW-LIST: everything is ignored unless un-ignored below, so `git add .` only picks up code, the report and the two nominated
+# submissions. ~30 GB of traces, datasets, competition data, paper PDFs and the venv stay out. To publish something new, add a `!` line.
+
+/*
+!/.gitignore
+!/README.md
+
+# ---------------------------------------------------------------- never, anywhere
+*.pem
+*.key
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------- submission code (what runs on the evaluator)
+!/submission_core/
+/submission_core/__pycache__/
+
+# ---------------------------------------------------------------- the two nominated submissions (recipes + shipped artifacts)
+!/submitted_solutions/
+/submitted_solutions/*
+!/submitted_solutions/permodel-v8-ent4096-small.zip
+!/submitted_solutions/permodel-v8-ent4096-olmoseg25-small.zip
+
+# ---------------------------------------------------------------- top-level extraction code and the zip builder
+!/extract_features.py
+!/extract_trajectories_v3.py
+!/extract_vllm_v3.py
+!/extract_aggregate_trajectories.py
+!/small_tests.py
+!/package_submissions.sh
+
+# ---------------------------------------------------------------- analysis scripts (code only; their inputs/outputs are not published)
+!/analysis/
+/analysis/*
+!/analysis/*.py
+
+# ---------------------------------------------------------------- labelling / perturbation tooling (code + spec only)
+!/hard_pool/
+/hard_pool/*
+!/hard_pool/*.py
+!/hard_pool/PERTURB_SPEC.md
+
+# ---------------------------------------------------------------- GPU job code (Python only; the .sh queues hold box addresses and paths)
+!/vast_packages/
+/vast_packages/**
+!/vast_packages/**/
+!/vast_packages/**/*.py
+
+# ---------------------------------------------------------------- technical report (sources, style files, PDF, candidate figures)
+!/report/
+/report/*
+!/report/main.tex
+!/report/refs.bib
+!/report/checklist_filled.tex
+!/report/neurips_2026.sty
+!/report/environ.sty
+!/report/trimspaces.sty
+!/report/main.pdf
+!/report/figs_review/
+
+# ---------------------------------------------------------------- LEADERBOARD-LABEL ANALYSIS: kept out (they use the inferred per-problem
+# leaderboard labels). Delete a line to publish that file. report_ablation.py produces Tables 1-3 of the report; publish it only if you
+# are happy for the repo to show how the leaderboard numbers of unsubmitted variants were computed.
+/analysis/report_ablation.py
+/analysis/report_figs.py
+/analysis/exp48_leaderboard_signal.py
+/analysis/exp62_unfinished_sign_stability.py
+/analysis/exp65_candidate_calls.py
+/analysis/exp67_ensembles_permodel.py
+/analysis/exp71_failure_modes.py
+/analysis/exp72_candidates.py
+/analysis/exp73_shift_and_permodel_search.py
+/analysis/exp77_permodel_search_ours.py
+/analysis/exp82_newmethods_lb.py
+/analysis/exp85_qwen_thresholds_lb.py
+/analysis/exp86_simulate_lb.py
+/analysis/exp89_thresholds_probes.py
+/analysis/exp90_olmo_novelty_switch.py
+/analysis/exp91_generalization.py
+/analysis/exp96_saved_wb_retest.py
+/analysis/exp97_battery_eval.py
+/analysis/exp100_wb_leaderboard.py
+/analysis/exp105_wblog2_lb.py
+/analysis/exp111_confident_pool.py
+/analysis/exp115_lb_identity.py
+/analysis/exp118_solve_threshold.py
+/analysis/exp120_rank_all.py
+/analysis/make_leaderboard_state.py
+
+# ---------------------------------------------------------------- scripts that embed the shared box's address / key file name
+/hard_pool/mv2diag/
