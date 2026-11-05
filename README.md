@@ -5,11 +5,11 @@ Code and technical report for our two nominated submissions to the
 DeepSeek-R1-0528-Qwen3-8B). For each (model, problem) pair, the method predicts whether the model's success survives faithful rewordings
 of the problem. It reads a single greedy reasoning trace, capped at 6144 tokens, plus a few teacher-forced passes over it.
 
-| Submission | Codabench submission ID | Zip | Public leaderboard | `train-main-v2` (our 4 models, 43 rows) |
-|---|---|---|---|---|
-| **S1** | 1023618 | `submitted_solutions/permodel-v8-ent4096-small.zip` | 1.00 | 33 / 43 |
-| **S2** | 1024956 | `submitted_solutions/permodel-v8-ent4096-olmoseg25-small.zip` | 0.93 | 36 / 43 |
-| all-robust baseline | — | — | 0.50 | 31 / 43 |
+| Submission | Zip | Public leaderboard | `train-main-v2` (our 4 models, 43 rows) |
+|---|---|---|---|
+| **S1** (Submission 1) | `submitted_solutions/permodel-v8-ent4096-small.zip` | 1.00 | 33 / 43 |
+| **S2** (Submission 2) | `submitted_solutions/permodel-v8-ent4096-olmoseg25-small.zip` | 0.93 | 36 / 43 |
+| all-robust baseline | — | 0.50 | 31 / 43 |
 
 Each zip also carries a build ID in its `SUBMISSION_INFO.json`. The SHA-256 of each zip lets anyone check that the file in this repo is
 byte-identical to the submitted one:
