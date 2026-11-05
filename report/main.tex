@@ -1,7 +1,15 @@
 \documentclass{article}
 
-% NeurIPS 2026 style. "preprint" = non-anonymous, no line numbers ("final" is reserved for accepted NeurIPS papers).
-\usepackage[preprint]{neurips_2026}
+% NeurIPS 2026 style. Two builds from this one source:
+%   main.tex        anonymised (default option: "Anonymous Author(s)", line numbers), as the challenge requires
+%   main_named.tex  named copy (preprint option); it defines \reportnamed, the authors and the real code link, then inputs this file
+\ifdefined\reportnamed
+  \usepackage[preprint]{neurips_2026}
+\else
+  \usepackage{neurips_2026}
+\fi
+\providecommand{\codeurl}{\textit{[anonymised repository link]}}
+\providecommand{\reportauthors}{Anonymous Author(s)}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -19,12 +27,9 @@
 \newcommand{\stwo}{\textsc{S2}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
-\title{Reading Robustness from One Truncated Trace:\\Per-Model White-Box Recipes for Spurious Math Reasoning}
+\title{Reading Robustness from One Truncated Trace:\\Methods for Detecting Spurious Math Reasoning}
 
-\author{%
-  Sabyasachi Choudhury \\ IIT Kanpur \\ \texttt{sabyasachi25@iitk.ac.in} \And
-  Garv \\ IIT Kanpur \\ \texttt{garv25@iitk.ac.in}
-}
+\author{\reportauthors}
 
 \begin{document}
 \maketitle
@@ -36,7 +41,7 @@ Our method calls every problem whose reasoning finishes within the budget robust
 Our two submissions differ only in Olmo's unfinished calls: the second replaces them with an early-trace hidden-state direction.
 They score 1.00 and 0.93 on the public leaderboard (all-robust: 0.50) and make 33 and 36 correct calls on the official training labels for our four models (43 rows; all-robust: 31). Removing the output-distribution signals lowers leaderboard accuracy to 0.71--0.79; removing the hidden-state and attention signals leaves the first submission unchanged, while the second's hidden-state direction loses three training set points, while losing one on the leaderboard.
 We also report a negative result: labels we generated with our own perturbations do not reproduce the official labels, which shaped how we validated everything.
-Code: \url{https://github.com/RKResident/AIMO-Interp-Challenge}.
+Code: \codeurl.
 \end{abstract}
 
 \section{Introduction}
@@ -66,7 +71,7 @@ All 11 \textsc{Main} rows that finish are robust. Every non-robust label therefo
 All features are computed on that one trace (definitions in Appendix~\ref{app:features}). We group them by what they read; Section~\ref{sec:wb} ablates the groups.
 
 \subsection{Text features (black-box)}
-\textbf{Finished rule}: whether the end-of-thinking token appears within the cap. \texttt{chk}: the share of $\ge$4-word sentences of the reasoning that check, verify or confirm something.
+\textbf{Finished rule}: whether the end-of-thinking token appears within the cap. \texttt{chk}: the share of $\ge$4-word sentences of the reasoning that verify or check something.
 
 \subsection{Output-distribution features (grey-box)}
 These read the model's next-token distribution under teacher forcing.
@@ -74,7 +79,7 @@ These read the model's next-token distribution under teacher forcing.
 $H_{b}$: the entropy of that distribution when the trace is cut at $b$ tokens.
 \emph{Answer survival} \citep[cf.\ early answering,][]{lanham2023faithfulness}: \texttt{nrk} and \texttt{f1k}, the probability of the clean forced answer when the reasoning is removed entirely or cut to its first 1024 tokens, relative to the clean probability.
 \texttt{cfl}: the change in the trace's log-likelihood when it is teacher-forced after three automatic rewordings of the problem (10\% typos, a neutral distractor sentence, renamed variables).
-Min-K\% \citep{shi2024mink} ($k=20$): the mean of the lowest 20\% token log-probabilities of the problem text, a familiarity score.
+Min-K\% \citep{shi2024mink} ($k=20$): the mean of the lowest 20\% token log-probabilities of the problem text, it is a familiarity score.
 
 \subsection{Internal features (white-box)}
 \emph{Hidden states}: \texttt{cfc}, the cosine between late-trace hidden states of the original pass and of the three reworded passes; the Olmo direction of \stwo{} (Section~\ref{sec:overrides}).
@@ -393,7 +398,9 @@ single-family builds (24) & 0.28--0.71 & 19--34 \\
 
 \section{Reproducibility}
 \label{app:repro}
-Code, recipes (\texttt{recipe.json}), shipped artifacts and the analysis scripts are at \url{https://github.com/RKResident/AIMO-Interp-Challenge}: \texttt{submission\_core/} (inference), \texttt{analysis/build\_submission\_artifacts.py} (calibration: references, thresholds, per-model recipes), \texttt{analysis/build\_datasets.py} (our labelled datasets, \texttt{datasets/}) and \texttt{reproduce/}. Running \texttt{python reproduce/replay.py -{}-main <train-main-v2 parquet>} regenerates every \textsc{Main} number in Tables~\ref{tab:main}--\ref{tab:position} and Appendices~\ref{app:dropone}--\ref{app:featauc} on CPU in seconds. It uses the recipes inside the submitted zips, the shipped scoring code and our per-trace feature values (\texttt{reproduce/features.csv}); the README gives the details. The remaining analysis scripts are published for transparency and depend on intermediate data that is not released.
+\textbf{Submissions.} \sone{} is our Submission~1 (\texttt{permodel-v8-ent4096-small.zip}, build \texttt{c03b14ac1abc}; 1.00 on the public leaderboard) and \stwo{} is our Submission~2 (\texttt{permodel-v8-ent4096-olmoseg25-small.zip}, build \texttt{87f69d278fb3}). Both zips are in the repository with their SHA-256 hashes (README).
+
+Code, recipes (\texttt{recipe.json}), shipped artifacts and the analysis scripts are at \codeurl: \texttt{submission\_core/} (inference), \texttt{analysis/build\_submission\_artifacts.py} (calibration: references, thresholds, per-model recipes), \texttt{analysis/build\_datasets.py} (our labelled datasets, \texttt{datasets/}) and \texttt{reproduce/}. Running \texttt{python reproduce/replay.py -{}-main <train-main-v2 parquet>} regenerates every \textsc{Main} number in Tables~\ref{tab:main}--\ref{tab:position} and Appendices~\ref{app:dropone}--\ref{app:featauc} on CPU in seconds. It uses the recipes inside the submitted zips, the shipped scoring code and our per-trace feature values (\texttt{reproduce/features.csv}); the README gives the details. The remaining analysis scripts are published for transparency and depend on intermediate data that is not released.
 Feature extraction and labelling ran on one NVIDIA RTX PRO 6000 and one A10G, using vLLM \citep{kwon2023vllm} for labelling samples and HF Transformers for features.
 Model licences: Qwen3.5-4B, Skywork-OR1-Math-7B and Olmo-3-7B-Think are released under Apache-2.0, DeepSeek-R1-0528-Qwen3-8B under MIT. The challenge data are used under the competition's terms and are not redistributed.
 

@@ -65,6 +65,7 @@ __pycache__/
 !/report/environ.sty
 !/report/trimspaces.sty
 !/report/main.pdf
+# report/main_named.tex / main_named.pdf (the named copy) stay out while the review is anonymous: report/* is ignored and they are not listed
 !/report/figs_review/
 
 # ---------------------------------------------------------------- LEADERBOARD-LABEL ANALYSIS: kept out (they use the inferred per-problem
