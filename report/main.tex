@@ -37,9 +37,9 @@
 \begin{abstract}
 The AIMO Interpretability Challenge asks whether a reasoning model's success on a competition math problem survives faithful rewordings of the problem.
 We predict this from a single greedy reasoning trace truncated at 6144 tokens, with white-box access to the model.
-Our method calls every problem whose reasoning finishes within the budget robust, and scores unfinished traces with separate methods per model: a rank ensemble of self-verification share, answer survival when the reasoning is cut, hidden-state sensitivity to programmatic rewordings, attention look-back and forced-answer confidence. for Qwen3.5-4B, we also use the entropy of the forced answer after 4096 tokens, and for Olmo-3-7B-Think, a Min-K\% familiarity router and a second model acting as a judge.
+Our method calls every problem whose reasoning finishes within the budget robust, and scores unfinished traces with separate methods per model: a rank ensemble of self-verification share, answer survival when the reasoning is cut, hidden-state sensitivity to programmatic rewordings, attention look-back and forced-answer confidence. For Qwen3.5-4B, we also use the entropy of the forced answer after 4096 tokens, and for Olmo-3-7B-Think, a Min-K\% familiarity router and a second model acting as a judge.
 Our two submissions differ only in Olmo's unfinished calls: the second replaces them with an early-trace hidden-state direction.
-They score 1.00 and 0.93 on the public leaderboard (all-robust: 0.50) and make 33 and 36 correct calls on the official training labels for our four models (43 rows; all-robust: 31). Removing the output-distribution signals lowers leaderboard accuracy to 0.71--0.79; removing the hidden-state and attention signals leaves the first submission unchanged, while the second's hidden-state direction loses three training set points, while losing one on the leaderboard.
+They score 1.00 and 0.93 on the public leaderboard (all-robust: 0.50) and make 33 and 36 correct calls on the official training labels for our four models (43 rows; all-robust: 31). Removing the output-distribution signals lowers leaderboard accuracy to 0.71--0.79; removing the hidden-state and attention signals leaves the first submission unchanged, while removing the second's hidden-state direction costs three training-set calls and gains one leaderboard problem.
 We also report a negative result: labels we generated with our own perturbations do not reproduce the official labels, which shaped how we validated everything.
 Code: \codeurl.
 \end{abstract}
@@ -188,7 +188,7 @@ Qwen $H_b$, $b=$ & ours & \textsc{Main} \\
 2048 & 0.61 & 0.71 \\
 3072 & 0.69 & 0.75 \\
 \textbf{4096} & 0.77 & 0.71 \\
-6144 & 0.79 & -- \\
+6144 & 0.79 & 0.68 \\
 \bottomrule
 \end{tabular}\hfill
 \begin{tabular}{lcc}
